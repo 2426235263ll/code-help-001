@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+
+<mapper namespace="com.itheima.dao.AddressDao">
+
+    <!--根据条件查询 分页 -->
+    <select id="findByCondition" parameterType="string" resultType="com.itheima.pojo.Address">
+        select * from t_address
+        <if test="value != null and value != '' and value.length > 0">
+            where company_address = #{value}
+        </if>
+
+    </select>
+
+    <!--查询结果位名称-->
+    <select id="findByCompany_address" resultType="com.itheima.pojo.Address">
+        select company_address from t_address
+    </select>
+
+    <!--删除地址-->
+    <delete id="deleteById" parameterType="int">
+        delete from t_address where id = #{id}
+    </delete>
+
+    <!--添加地址-->
+    <insert id="add" parameterType="com.itheima.pojo.Address">
+        insert into t_address(company_address,longitude,latitude)
+              values(#{company_address},#{longitude},#{latitude})
+    </insert>
+
+    <!--根据名称查询-->
+    <select id="selectByName" parameterType="string" resultType="com.itheima.pojo.Address">
+        select * from t_address where company_address = #{value}
+    </select>
+</mapper>

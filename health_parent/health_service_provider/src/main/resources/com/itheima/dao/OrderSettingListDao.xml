@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.OrderSettingListDao">
+
+    <!--分页条件查询-->
+    <select id="selectByCondition" parameterType="String" resultType="com.itheima.pojo.OrderSettingList">
+        SELECT o.id, o.orderDate,m.fileNumber,m.name,m.phoneNumber,o.orderType,o.orderStatus
+        FROM t_member m,t_order o
+	      WHERE o.member_id=m.id
+        <if test="value!=null and value.length>0">
+            and fileNumber=#{value} or phoneNumber=#{value} or name=#{value}
+        </if>
+    </select>
+
+    <!--查询所有套餐信息-->
+    <select id="findAllSetmeal" resultType="com.itheima.pojo.Setmeal">
+        select * from t_setmeal
+    </select>
+
+    <!--确认预约-->
+    <update id="update" parameterType="int">
+        update t_order set orderStatus='已预约' where id=#{id}
+    </update>
+
+    <!--确认用户预约信息发送短信-->
+    <select id="findById" parameterType="int" resultType="com.itheima.pojo.OrderSettingList">
+        select o.orderDate , m.phoneNumber
+          from t_order o,t_member m
+        where o.id=#{id} and o.member_id = m.id
+    </select>
+
+    <!--删除用户预约信息-->
+    <delete id="delete" parameterType="int" >
+        delete from t_order where id=#{id}
+    </delete>
+
+</mapper>

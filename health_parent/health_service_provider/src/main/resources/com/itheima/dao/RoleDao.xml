@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.itheima.dao.RoleDao">
+    <!--根据角色ID查询关联的权限-->
+    <select id="findByUserId" parameterType="int" resultType="com.itheima.pojo.Role">
+        select r.*
+          from t_role r,t_user_role ur
+          where r.id = ur.role_id and ur.user_id = #{user_id}
+    </select>
+
+
+    <resultMap id="baseResultMap" type="com.itheima.pojo.Role">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="keyword" property="keyword"/>
+        <result column="description" property="description"/>
+    </resultMap>
+
+    <resultMap id="findByIdResultMap" type="com.itheima.pojo.Role" extends="baseResultMap">
+        <!--权限和角色多对多关联查询-->
+        <collection property="permissions"
+                    ofType="com.itheima.pojo.Permission"
+                    column="id"
+                    select="com.itheima.pojo.PermissionDao.findPermissionById"
+        ></collection>
+    </resultMap>
+
+    <!--添加角色-->
+    <insert id="add" parameterType="com.itheima.pojo.Role">
+        <selectKey resultType="java.lang.Integer" order="AFTER" keyProperty="id">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into t_role(name,keyword,description)
+        values
+        (#{name},#{keyword},#{description})
+    </insert>
+
+    <!--分页查询-->
+    <select id="selectByCondition" parameterType="String" resultType="com.itheima.pojo.Role">
+        select * from t_role
+        <if test="value != null and value.length > 0">
+            where name = #{value}
+        </if>
+    </select>
+
+    <!--设置权限和角色多对多关系-->
+    <insert id="setRoleAndPermission" parameterType="map">
+        insert into t_role_permission(role_id,permission_id)
+        values
+        (#{roleId},#{permissionId})
+    </insert>
+
+    <!--根据角色ID查询关联的多个权限ID，查询中间关系表-->
+    <select id="findPermissionIdsByRoleId" parameterType="int" resultType="int">
+        select permission_id from t_role_permission where role_id = #{id}
+    </select>
+
+    <!--查询所有-->
+    <select id="findAll" resultType="com.itheima.pojo.Role">
+        select * from t_role
+    </select>
+
+    <!--根据ID删除-->
+    <delete id="deleteById" parameterType="int">
+        delete from t_role where id = #{id}
+    </delete>
+
+    <!--根据ID查询-->
+    <select id="findById" parameterType="int" resultType="com.itheima.pojo.Role">
+        select * from t_role where id = #{id}
+    </select>
+
+    <!--根据角色ID清理关联的用户信息，操作的表-->
+    <delete id="deleteAssocication1" parameterType="int">
+        delete from t_role_permission where role_id = #{id}
+    </delete>
+    <!--根据角色ID清理关联的权限信息，操作的表-->
+    <delete id="deleteAssocication2" parameterType="int">
+        delete from t_user_role where role_id = #{id}
+    </delete>
+
+    <update id="edit" parameterType="com.itheima.pojo.Role">
+        update t_role
+        <set>
+            <if test="name != null">
+                name = #{name},
+            </if>
+            <if test="keyword != null">
+                keyword = #{keyword},
+            </if>
+            <if test="description != null">
+                description = #{description},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+</mapper>

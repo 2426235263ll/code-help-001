@@ -1,0 +1,99 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf8" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <title>批量地址</title>
+    <style type="text/css">
+        body, html{width: 100%;height: 100%;margin:0;font-family:"微软雅黑";}
+        #l-map{height:450px;width:100%;}
+        #r-result{width:100%; font-size:14px;line-height:20px;}
+    </style>
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=3.0&ak=rdGb3LCg2QA1jy9EaMrsZuvB2cZbsL1L"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../plugins/elementui/index.css">
+    <link rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<!-- 引入组件库 -->
+<script src="../js/vue.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<body>
+
+    <div id="l-map"></div>
+
+    <div id="r-result">
+        <!--<input type="button" value="批量地址解析" onclick="bdGEO()" />-->
+        <div id="result"></div>
+    </div>
+    <div id="app"></div>
+
+</body>
+</html>
+<script type="text/javascript">
+    // 百度地图API功能
+    var map = new BMap.Map("l-map");
+    map.centerAndZoom("华中科技大学",15);
+    map.enableScrollWheelZoom(true);
+    var index = 0;
+    var myGeo = new BMap.Geocoder();
+    var adds = [
+        "武汉市洪山区锦江之星(最新二路店)",
+        "华中科技大学",
+        "华中农业大学",
+    ];
+    function bdGEO(){
+        if (index < adds.length) {
+            var add = adds[index];
+            geocodeSearch(add);
+            index++;
+        }
+    }
+    function geocodeSearch(add){
+        if(index < adds.length){
+            setTimeout(window.bdGEO,400);
+        }
+        myGeo.getPoint(add, function(point){
+            if (point) {
+                // document.getElementById("result").innerHTML +=  index + "、" + add + ":" + point.lng + "," + point.lat + "</br>";
+                var address = new BMap.Point(point.lng, point.lat);
+
+                addMarker(address,new BMap.Label(index+":"+add,{offset:new BMap.Size(20,-10)}));
+            }
+        }, "武汉市");
+    }
+    // 编写自定义函数,创建标注
+    function addMarker(point,label){
+        var marker = new BMap.Marker(point);
+        map.addOverlay(marker);
+        marker.setLabel(label);
+    }
+
+    new Vue({
+        el:'#app',
+        data:{
+
+        },
+
+        created(){
+            this.loadAllAddress();
+            //进入界面刷新地图地址
+            bdGEO();
+        },
+
+        methods:{
+            loadAllAddress(){
+                //发送请求
+                axios.post("/address/findByCompany_address.do").then((res) => {
+                    if (res.data.flag) {
+                        //把地图名称json数组,封装给adds
+                        adds = res.data.data;
+                        // alert(res.data.data[0]);
+                    }
+                });
+            }
+        }
+    });
+
+</script>
